@@ -1,0 +1,610 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "EcoTrack API",
+        "description": "Système de traçabilité intelligente pour la Supply Chain (Mobile & IoT).",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8003",
+            "description": "Serveur Local"
+        }
+    ],
+    "paths": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Inscription d'un nouvel acteur",
+                "description": "Deux types d'inscription : \n                    - Admin : crée une entreprise\n                    - Worker : rejoint une entreprise existante via company_id",
+                "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "required": [
+                                            "name",
+                                            "email",
+                                            "password",
+                                            "role",
+                                            "company_name",
+                                            "company_type"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Franck Admin"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "admin@mail.com"
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "format": "password",
+                                                "example": "password123"
+                                            },
+                                            "role": {
+                                                "type": "string",
+                                                "example": "admin"
+                                            },
+                                            "company_name": {
+                                                "type": "string",
+                                                "example": "Smart Mobility"
+                                            },
+                                            "company_type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "producer",
+                                                    "logistics",
+                                                    "retailer"
+                                                ],
+                                                "example": "logistics"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    {
+                                        "required": [
+                                            "name",
+                                            "email",
+                                            "password",
+                                            "role",
+                                            "company_id"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Jean Worker"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "worker@mail.com"
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "format": "password",
+                                                "example": "password123"
+                                            },
+                                            "role": {
+                                                "type": "string",
+                                                "example": "worker"
+                                            },
+                                            "company_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                ]
+                            },
+                            "examples": {
+                                "admin": {
+                                    "summary": "Inscription Admin",
+                                    "value": {
+                                        "name": "Franck Admin",
+                                        "email": "admin@mail.com",
+                                        "password": "password123",
+                                        "role": "admin",
+                                        "company_name": "Smart Mobility",
+                                        "company_type": "logistics"
+                                    }
+                                },
+                                "worker": {
+                                    "summary": "Inscription Worker",
+                                    "value": {
+                                        "name": "Jean Worker",
+                                        "email": "worker@mail.com",
+                                        "password": "password123",
+                                        "role": "worker",
+                                        "company_id": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|asdasdasdasd"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Connexion pour obtenir un Token",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean@coffee.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie"
+                    },
+                    "401": {
+                        "description": "Identifiants invalides"
+                    }
+                }
+            }
+        },
+        "/api/companies": {
+            "get": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Lister toutes les entreprises disponibles",
+                "description": "Permet aux workers de récupérer la liste des entreprises pour choisir un company_id lors de l'inscription",
+                "operationId": "a261a49d113a2af2a5ccb5798c6aae7e",
+                "responses": {
+                    "200": {
+                        "description": "Liste des entreprises",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Mobility Co"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "logistics"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/allproducts": {
+            "get": {
+                "tags": [
+                    "Produits"
+                ],
+                "summary": "Lister les produits (paginé)",
+                "description": "Retourne la liste paginée des produits avec leur société (company).",
+                "operationId": "ef825e12ed18442cd413ec4488e7d344",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page (défaut 20)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste paginée des produits",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products": {
+            "post": {
+                "tags": [
+                    "Produits"
+                ],
+                "summary": "Créer un nouveau produit",
+                "description": "Détail d'un produit par UUID.\n\nGET /api/products/{uuid}",
+                "operationId": "785644b7d7dd38af4b51dafd0fbc1b6d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "sku"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sac de Café Arabica 25kg"
+                                    },
+                                    "sku": {
+                                        "type": "string",
+                                        "example": "CAF-AR-001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Produit créé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{uuid}/qrcode": {
+            "get": {
+                "tags": [
+                    "Produits"
+                ],
+                "summary": "Générer l'image du QR Code",
+                "operationId": "20b140e10ee77252caa33b27abaf1915",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Image du QR Code (SVG)"
+                    },
+                    "404": {
+                        "description": "Produit non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/products/{uuid}/scan": {
+            "post": {
+                "tags": [
+                    "Traçabilité"
+                ],
+                "summary": "Enregistrer un scan officiel (Mobile ou IoT)",
+                "description": "Cette route est utilisée par les terminaux de terrain pour mettre à jour le statut et la position GPS.",
+                "operationId": "93354ecf2b98d91f1ac5295d96b1a7ec",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "latitude",
+                                    "longitude"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "processed",
+                                            "in_transit",
+                                            "delivered"
+                                        ]
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 6.36
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2.43
+                                    },
+                                    "location_name": {
+                                        "type": "string",
+                                        "example": "Entrepôt Cotonou"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "example": {
+                                            "temp": 4.5,
+                                            "humidity": 20
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Scan enregistré avec succès"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{uuid}/history": {
+            "get": {
+                "tags": [
+                    "Consultation Publique"
+                ],
+                "summary": "Afficher la timeline du produit (Scan QR Code)",
+                "description": "Route publique accessible par le consommateur final pour vérifier la provenance et l'historique du produit.",
+                "operationId": "97ef2caf37235a32dc895e1de99a1c1a",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Historique récupéré"
+                    }
+                }
+            }
+        },
+        "/api/worker/steps": {
+            "get": {
+                "tags": [
+                    "Simulation Ouvrier"
+                ],
+                "summary": "Liste les statuts valides pour le workflow",
+                "description": "Liste les étapes de workflow disponibles pour aider l'ouvrier à choisir",
+                "operationId": "eab9681add1acf3d6e2eec39ef9c1b8e",
+                "responses": {
+                    "200": {
+                        "description": "Liste des étapes récupérée"
+                    }
+                }
+            }
+        },
+        "/api/worker/submit-scan": {
+            "post": {
+                "tags": [
+                    "Simulation Ouvrier"
+                ],
+                "summary": "Simuler la soumission d'un scan par un ouvrier",
+                "description": "Route de \"Passerelle\" pour simuler l'envoi depuis une App Mobile",
+                "operationId": "56b8c5deb8090617ef2dafa953d04fee",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_uuid",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "product_uuid": {
+                                        "type": "string",
+                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "processed",
+                                            "in_transit",
+                                            "delivered"
+                                        ]
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "example": 6.36
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "example": 2.43
+                                    },
+                                    "location_name": {
+                                        "type": "string",
+                                        "example": "Entrepôt de Tri A"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "example": {
+                                            "condition": "good",
+                                            "battery": "85%"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Scan métier simulé avec succès"
+                    },
+                    "422": {
+                        "description": "Données invalides ou UUID inexistant"
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "JsonResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Unauthenticated."
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Entrez votre token reçu lors du login",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Traçabilité",
+            "description": "Endpoints pour les scans mobiles et machines IoT"
+        },
+        {
+            "name": "Simulation Ouvrier",
+            "description": "Simule l'interaction d'une application mobile métier"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Companies",
+            "description": "Companies"
+        },
+        {
+            "name": "Produits",
+            "description": "Produits"
+        },
+        {
+            "name": "Consultation Publique",
+            "description": "Consultation Publique"
+        }
+    ]
+}
