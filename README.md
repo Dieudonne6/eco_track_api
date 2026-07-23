@@ -189,13 +189,6 @@ php artisan l5-swagger:generate
 php artisan serve
 ```
 
----
-
-## ✅ Tests
-
-```bash
-php artisan test
-```
 
 ---
 
