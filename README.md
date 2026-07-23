@@ -150,7 +150,7 @@ Tokens work both for human users (mobile app) and for authenticated IoT devices.
 
 ```bash
 # 1. Clone the project
-git clone https://github.com/your-account/eco-track-api.git
+git clone https://github.com/Dieudonne6/eco_track_api.git
 cd eco-track-api
 
 # 2. Set up the environment
